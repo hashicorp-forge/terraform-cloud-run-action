@@ -27,7 +27,11 @@ function configureRunCreateOptions(wsID: string): RunCreateOptions {
 (async () => {
   try {
     const client = configureClient();
-    log.debug(`fetching workspace ${core.getInput("organization")}/${core.getInput("workspace")}`);
+    log.debug(
+      `fetching workspace ${core.getInput("organization")}/${core.getInput(
+        "workspace"
+      )}`
+    );
     const ws = await client.readWorkspace(
       core.getInput("organization"),
       core.getInput("workspace")

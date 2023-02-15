@@ -47,9 +47,7 @@ export class Runner {
 
   private async pollWaitForResources(ws: WorkspaceShowResponse): Promise<void> {
     let sv = await this.client.readCurrentStateVersion(ws);
-    log.info(
-      `Waiting for workspace ${ws.data.id} to process resources...`
-    );
+    log.info(`Waiting for workspace ${ws.data.id} to process resources...`);
     while (!sv.data.attributes["resources-processed"]) {
       await sleep(pollIntervalResourcesMs);
       sv = await this.client.readCurrentStateVersion(ws);
@@ -57,8 +55,7 @@ export class Runner {
   }
 
   private async pollWaitForRun(run: RunResponse): Promise<RunResponse> {
-    poll:
-    while (true) {
+    poll: while (true) {
       switch (run.data.attributes.status) {
         case "canceled":
         case "force_canceled":
