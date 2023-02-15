@@ -11,7 +11,7 @@ import {
 } from "./client";
 import { DefaultLogger as log } from "./logger";
 
-const pollIntervalRunMs = 2000;
+const pollIntervalRunMs = 4000;
 const pollIntervalResourcesMs = 1000;
 
 async function sleep(interval: number): Promise<void> {
@@ -47,8 +47,8 @@ export class Runner {
 
   private async pollWaitForResources(ws: WorkspaceShowResponse): Promise<void> {
     let sv = await this.client.readCurrentStateVersion(ws);
-    log.debug(
-      `Waiting for workspace ${ws.data.id} to process resources, polling...`
+    log.info(
+      `Waiting for workspace ${ws.data.id} to process resources...`
     );
     while (!sv.data.attributes["resources-processed"]) {
       await sleep(pollIntervalResourcesMs);
@@ -57,9 +57,11 @@ export class Runner {
   }
 
   private async pollWaitForRun(run: RunResponse): Promise<RunResponse> {
+    poll:
     while (true) {
       switch (run.data.attributes.status) {
         case "canceled":
+        case "force_canceled":
         case "errored":
         case "discarded":
           throw new Error(
@@ -67,10 +69,10 @@ export class Runner {
           );
         case "planned_and_finished":
         case "applied":
-          break;
+          break poll; // Otherwise break
       }
-      log.debug(
-        `Waiting for run ${run.data.id} to complete, status is ${run.data.attributes.status}, polling...`
+      log.info(
+        `Waiting for run ${run.data.id} to complete, status is ${run.data.attributes.status}...`
       );
       await sleep(pollIntervalRunMs);
       run = await this.client.readRun(run.data.id);

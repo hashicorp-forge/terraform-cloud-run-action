@@ -11257,7 +11257,7 @@ var runner_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _a
     });
 };
 
-const pollIntervalRunMs = 2000;
+const pollIntervalRunMs = 4000;
 const pollIntervalResourcesMs = 1000;
 function sleep(interval) {
     return runner_awaiter(this, void 0, void 0, function* () {
@@ -11284,7 +11284,7 @@ class Runner {
     pollWaitForResources(ws) {
         return runner_awaiter(this, void 0, void 0, function* () {
             let sv = yield this.client.readCurrentStateVersion(ws);
-            DefaultLogger.debug(`Waiting for workspace ${ws.data.id} to process resources, polling...`);
+            DefaultLogger.info(`Waiting for workspace ${ws.data.id} to process resources...`);
             while (!sv.data.attributes["resources-processed"]) {
                 yield sleep(pollIntervalResourcesMs);
                 sv = yield this.client.readCurrentStateVersion(ws);
@@ -11293,17 +11293,18 @@ class Runner {
     }
     pollWaitForRun(run) {
         return runner_awaiter(this, void 0, void 0, function* () {
-            while (true) {
+            poll: while (true) {
                 switch (run.data.attributes.status) {
                     case "canceled":
+                    case "force_canceled":
                     case "errored":
                     case "discarded":
                         throw new Error(`run exited unexpectedly with status: ${run.data.attributes.status}`);
                     case "planned_and_finished":
                     case "applied":
-                        break;
+                        break poll; // Otherwise break
                 }
-                DefaultLogger.debug(`Waiting for run ${run.data.id} to complete, status is ${run.data.attributes.status}, polling...`);
+                DefaultLogger.info(`Waiting for run ${run.data.id} to complete, status is ${run.data.attributes.status}...`);
                 yield sleep(pollIntervalRunMs);
                 run = yield this.client.readRun(run.data.id);
             }

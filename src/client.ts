@@ -6,7 +6,6 @@
 import axios, { AxiosInstance } from "axios";
 import axiosRetry from "axios-retry";
 import * as querystring from "querystring";
-import { DefaultLogger as log } from "./logger";
 
 export type EntityData = {
   id: string;
