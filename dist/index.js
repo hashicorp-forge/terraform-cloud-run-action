@@ -11127,14 +11127,6 @@ axiosRetry.isRetryableError = isRetryableError;
 //# sourceMappingURL=index.js.map
 ;// CONCATENATED MODULE: external "querystring"
 const external_querystring_namespaceObject = require("querystring");
-;// CONCATENATED MODULE: ./src/logger.ts
-/**
- * Copyright (c) HashiCorp, Inc.
- * SPDX-License-Identifier: MPL-2.0
- */
-
-const DefaultLogger = core;
-
 ;// CONCATENATED MODULE: ./src/client.ts
 /**
  * Copyright (c) HashiCorp, Inc.
@@ -11149,7 +11141,6 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-
 
 
 
@@ -11173,9 +11164,7 @@ class TFEClient {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const path = `/api/v2/organizations/${external_querystring_namespaceObject.escape(organization)}/workspaces/${external_querystring_namespaceObject.escape(workspace)}`;
-                DefaultLogger.debug(`client fetching path ${path}`);
                 const workspaceResponse = yield this.client.get(path);
-                DefaultLogger.debug(`client done`);
                 return workspaceResponse.data;
             }
             catch (err) {
@@ -11222,7 +11211,7 @@ class TFEClient {
                 if (opts.targetAddrs) {
                     attributes["target-addrs"] = opts.targetAddrs;
                 }
-                const resp = yield this.client.post("runs", {
+                const resp = yield this.client.post("/api/v2/runs", {
                     data: {
                         attributes: attributes,
                         type: "runs",
@@ -11244,6 +11233,14 @@ class TFEClient {
         });
     }
 }
+
+;// CONCATENATED MODULE: ./src/logger.ts
+/**
+ * Copyright (c) HashiCorp, Inc.
+ * SPDX-License-Identifier: MPL-2.0
+ */
+
+const DefaultLogger = core;
 
 ;// CONCATENATED MODULE: ./src/runner.ts
 /**

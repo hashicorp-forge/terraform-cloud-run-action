@@ -78,11 +78,9 @@ export class TFEClient {
         organization
       )}/workspaces/${querystring.escape(workspace)}`;
 
-      log.debug(`client fetching path ${path}`);
       const workspaceResponse = await this.client.get<WorkspaceShowResponse>(
         path
       );
-      log.debug(`client done`);
 
       return workspaceResponse.data;
     } catch (err) {
@@ -134,7 +132,7 @@ export class TFEClient {
         attributes["target-addrs"] = opts.targetAddrs;
       }
 
-      const resp = await this.client.post<RunResponse>("runs", {
+      const resp = await this.client.post<RunResponse>("/api/v2/runs", {
         data: {
           attributes: attributes,
           type: "runs",
