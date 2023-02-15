@@ -1,8 +1,44 @@
-name: Example Typescript Action
+# Copyright (c) HashiCorp, Inc.
+# SPDX-License-Identifier: MPL-2.0
+
+name: Terraform Cloud Run
 runs:
   using: 'node16'
   main: 'dist/index.js'
 inputs:
-  motd:
-    description: An example input
-    default: 'Hello, World!'
+  hostname:
+    required: false
+    default: 'app.terraform.io'
+  token:
+    description: "The Terraform Cloud/Terraform Enterprise access token."
+    required: true
+  organization:
+    description: "The Terraform Cloud/Terraform Enterprise organization that owns the specified workspace."
+    required: true
+  workspace:
+    description: "The Terraform Cloud/Terraform Enterprise workspace to fetch outputs from."
+    required: true
+  wait:
+    description: "If set, waits for the run to terminate and resources to be processed before the action finishes. Defaults to true."
+    required: false
+    default: true
+  auto-apply:
+    description: "If set, applies changes when a Terraform plan is successful. Defaults to true."
+    required: false
+    default: true
+  is-destroy:
+    description: "If set, a destroy plan will be run. Defaults to false."
+    required: false
+    default: false
+  message:
+    required: false
+    description: "A custom message to associate with the run."
+    default: "Run created by GitHub action"
+  replace-addrs:
+    description: "Multi-line list of resource addresses to be replaced. Use one address per line."
+    required: false
+  target-addrs:
+    description: "Multi-line list of resource addresses that Terraform should focus its planning efforts on. Use one address per line."
+outputs:
+  run-id:
+    description: "The id of the run that was created"
