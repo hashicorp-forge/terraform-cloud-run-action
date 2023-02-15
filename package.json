@@ -7,7 +7,7 @@
     "build": "ncc build src/action.ts -o dist --license licenses.txt",
     "format": "prettier --write '**/*.ts'",
     "format-check": "prettier --check '**/*.ts'",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "prepare": "husky install"
   },
   "dependencies": {
