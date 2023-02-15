@@ -6,6 +6,7 @@
 import axios, { AxiosInstance } from "axios";
 import axiosRetry from "axios-retry";
 import * as querystring from "querystring";
+import { DefaultLogger as log } from "./logger";
 
 export type EntityData = {
   id: string;
@@ -76,9 +77,12 @@ export class TFEClient {
       const path = `/api/v2/organizations/${querystring.escape(
         organization
       )}/workspaces/${querystring.escape(workspace)}`;
+
+      log.debug(`client fetching path ${path}`);
       const workspaceResponse = await this.client.get<WorkspaceShowResponse>(
         path
       );
+      log.debug(`client done`);
 
       return workspaceResponse.data;
     } catch (err) {
