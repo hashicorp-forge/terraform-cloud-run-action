@@ -6,6 +6,7 @@
 import axios, { AxiosInstance } from "axios";
 import axiosRetry from "axios-retry";
 import * as querystring from "querystring";
+import { DefaultLogger as log } from "./logger";
 
 export type EntityData = {
   id: string;
@@ -77,10 +78,12 @@ export class TFEClient {
         organization
       )}/workspaces/${querystring.escape(workspace)}`;
 
+      log.debug(`client readWorkspace ${path}`);
       const workspaceResponse = await this.client.get<WorkspaceShowResponse>(
         path
       );
 
+      log.debug(`client readWorkspace success`);
       return workspaceResponse.data;
     } catch (err) {
       throw new Error(`Failed to read workspace: ${err.message}`);
@@ -95,9 +98,11 @@ export class TFEClient {
         .related;
 
     try {
+      log.debug(`client readCurrentStateVersion ${path}`);
       const stateVersionResponse =
         await this.client.get<CurrentStateVersionWithOutputsResponse>(path);
 
+      log.debug(`client readCurrentStateVersion success`);
       return stateVersionResponse.data;
     } catch (err) {
       throw new Error(`Failed to read ${path}: ${err.message}`);
@@ -106,8 +111,11 @@ export class TFEClient {
 
   public async readRun(id: string): Promise<RunResponse> {
     try {
-      const url = `/api/v2/runs/${querystring.escape(id)}`;
-      const resp = await this.client.get<RunResponse>(url);
+      const path = `/api/v2/runs/${querystring.escape(id)}`;
+
+      log.debug(`client readRun ${path}`);
+      const resp = await this.client.get<RunResponse>(path);
+      log.debug(`client readRun success`);
 
       return resp.data;
     } catch (err) {
@@ -131,7 +139,10 @@ export class TFEClient {
         attributes["target-addrs"] = opts.targetAddrs;
       }
 
-      const resp = await this.client.post<RunResponse>("/api/v2/runs", {
+      const path = "/api/v2/runs";
+
+      log.debug(`client createRun ${path}`);
+      const resp = await this.client.post<RunResponse>(path, {
         data: {
           attributes: attributes,
           type: "runs",
@@ -145,6 +156,7 @@ export class TFEClient {
           },
         },
       });
+      log.debug(`client createRun success`);
 
       return resp.data;
     } catch (err) {

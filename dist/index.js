@@ -11127,6 +11127,14 @@ axiosRetry.isRetryableError = isRetryableError;
 //# sourceMappingURL=index.js.map
 ;// CONCATENATED MODULE: external "querystring"
 const external_querystring_namespaceObject = require("querystring");
+;// CONCATENATED MODULE: ./src/logger.ts
+/**
+ * Copyright (c) HashiCorp, Inc.
+ * SPDX-License-Identifier: MPL-2.0
+ */
+
+const DefaultLogger = core;
+
 ;// CONCATENATED MODULE: ./src/client.ts
 /**
  * Copyright (c) HashiCorp, Inc.
@@ -11141,6 +11149,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+
 
 
 
@@ -11164,7 +11173,9 @@ class TFEClient {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const path = `/api/v2/organizations/${external_querystring_namespaceObject.escape(organization)}/workspaces/${external_querystring_namespaceObject.escape(workspace)}`;
+                DefaultLogger.debug(`client readWorkspace ${path}`);
                 const workspaceResponse = yield this.client.get(path);
+                DefaultLogger.debug(`client readWorkspace success`);
                 return workspaceResponse.data;
             }
             catch (err) {
@@ -11177,7 +11188,9 @@ class TFEClient {
             const path = workspaceResponse.data.relationships["current-state-version"].links
                 .related;
             try {
+                DefaultLogger.debug(`client readCurrentStateVersion ${path}`);
                 const stateVersionResponse = yield this.client.get(path);
+                DefaultLogger.debug(`client readCurrentStateVersion success`);
                 return stateVersionResponse.data;
             }
             catch (err) {
@@ -11188,8 +11201,10 @@ class TFEClient {
     readRun(id) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const url = `/api/v2/runs/${external_querystring_namespaceObject.escape(id)}`;
-                const resp = yield this.client.get(url);
+                const path = `/api/v2/runs/${external_querystring_namespaceObject.escape(id)}`;
+                DefaultLogger.debug(`client readRun ${path}`);
+                const resp = yield this.client.get(path);
+                DefaultLogger.debug(`client readRun success`);
                 return resp.data;
             }
             catch (err) {
@@ -11211,7 +11226,9 @@ class TFEClient {
                 if (opts.targetAddrs) {
                     attributes["target-addrs"] = opts.targetAddrs;
                 }
-                const resp = yield this.client.post("/api/v2/runs", {
+                const path = "/api/v2/runs";
+                DefaultLogger.debug(`client createRun ${path}`);
+                const resp = yield this.client.post(path, {
                     data: {
                         attributes: attributes,
                         type: "runs",
@@ -11225,6 +11242,7 @@ class TFEClient {
                         },
                     },
                 });
+                DefaultLogger.debug(`client createRun success`);
                 return resp.data;
             }
             catch (err) {
@@ -11233,14 +11251,6 @@ class TFEClient {
         });
     }
 }
-
-;// CONCATENATED MODULE: ./src/logger.ts
-/**
- * Copyright (c) HashiCorp, Inc.
- * SPDX-License-Identifier: MPL-2.0
- */
-
-const DefaultLogger = core;
 
 ;// CONCATENATED MODULE: ./src/runner.ts
 /**
@@ -11265,20 +11275,21 @@ function sleep(interval) {
     });
 }
 class Runner {
-    constructor(client, wait, workspace) {
+    constructor(client, workspace) {
         this.client = client;
-        this.wait = wait;
         this.workspace = workspace;
+    }
+    waitFor(run) {
+        return runner_awaiter(this, void 0, void 0, function* () {
+            run = yield this.pollWaitForRun(run);
+            yield this.pollWaitForResources(this.workspace);
+            return run;
+        });
     }
     createRun(opts) {
         return runner_awaiter(this, void 0, void 0, function* () {
             opts.workspaceID = this.workspace.data.id;
-            let run = yield this.client.createRun(opts);
-            if (this.wait) {
-                run = yield this.pollWaitForRun(run);
-                yield this.pollWaitForResources(this.workspace);
-            }
-            return run;
+            return yield this.client.createRun(opts);
         });
     }
     pollWaitForResources(ws) {
@@ -11302,9 +11313,9 @@ class Runner {
                         throw new Error(`run exited unexpectedly with status: ${run.data.attributes.status}`);
                     case "planned_and_finished":
                     case "applied":
-                        break poll; // Otherwise break
+                        break poll; // Without label, only breaks the switch statement
                 }
-                DefaultLogger.info(`Waiting for run ${run.data.id} to complete, status is ${run.data.attributes.status}...`);
+                DefaultLogger.info(`Waiting for run ${run.data.id} to complete, status was '${run.data.attributes.status}'...`);
                 yield sleep(pollIntervalRunMs);
                 run = yield this.client.readRun(run.data.id);
             }
@@ -11344,13 +11355,21 @@ function configureRunCreateOptions(wsID) {
         workspaceID: wsID,
     };
 }
+const REQUIRED_VARIABLES = ["organization", "workspace", "token"];
 (() => action_awaiter(void 0, void 0, void 0, function* () {
     try {
         const client = configureClient();
-        DefaultLogger.debug(`fetching workspace ${core.getInput("organization")}/${core.getInput("workspace")}`);
+        REQUIRED_VARIABLES.forEach(i => {
+            if (core.getInput(i) === "") {
+                throw new Error(`Input parameter ${i} is required but not provided.`);
+            }
+        });
         const ws = yield client.readWorkspace(core.getInput("organization"), core.getInput("workspace"));
-        const runner = new Runner(client, core.getBooleanInput("wait"), ws);
-        const run = yield runner.createRun(configureRunCreateOptions(ws.data.id));
+        const runner = new Runner(client, ws);
+        let run = yield runner.createRun(configureRunCreateOptions(ws.data.id));
+        if (core.getBooleanInput("wait")) {
+            run = yield runner.waitFor(run);
+        }
         DefaultLogger.debug(`Created run ${run.data.id}`);
         core.setOutput("run-id", run.data.id);
     }

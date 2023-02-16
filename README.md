@@ -1,34 +1,84 @@
-# Template Typescript Action
+# terraform-cloud-run-action
 
-A template repository for building javascript github actions in Typescript. Here is the tooling setup:
+## Overview
 
-- [@vercel/ncc](https://github.com/vercel/ncc) compiles typescript to a single file
-- ts-jest testing
-- prettier formatting
-- CI checks
-- pre-commit protections
+A GitHub Action that creates an apply or destroy run in a Terraform Cloud workspace. Use this in conjunction with [brandonc/terraform-cloud-outputs-action](https://github.com/brandonc/terraform-cloud-outputs-action) to assemble GitHub Action pipelines using infrastructure managed by Terraform Cloud.
 
-## Install
+### Inputs
 
-`npm install`
-`npm prepare`
+- `token` (**Required**): The token of the TFC/E instance which holds the workspace that manages your tflocal instance.
+- `organization` (**Required**): The TFC/E organization that manages the specified workspace.
+- `workspace` (**Required**): The name of the TFC/E workspace that manages the tflocal configuration.
+- `hostname` (**Optional**): The hostname of the TFC/E instance which holds the workspace that manages your tflocal instance. Defaults to `app.terraform.io`.
+- `wait` (**Optional**): If set, waits for the run to terminate and resources to be processed before the action finishes. Defaults to true.
+- `auto-apply` (**Optional**): If set, applies changes when a Terraform plan is successful. Defaults to true.
+- `is-destroy` (**Optional**): If set, a destroy plan will be run. Defaults to false.
+- `message` (**Optional**): A custom message to associate with the run. Default to "Run created by GitHub action"
+- `replace-addrs` (**Optional**): Multi-line list of resource addresses to be replaced. Use one address per line.
+- `target-addrs` (**Optional**): Multi-line list of resource addresses that Terraform should focus its planning efforts on. Use one address per line.
 
-## Run Tests
+[Read more about the Runs API](https://developer.hashicorp.com/terraform/cloud-docs/api-docs/run#create-a-run)
 
-`npm run test`
+### Outputs
 
----
+- `run-id`: The run ID for the created run.
 
-Example README for Actions follows
+## Example Usage
 
----
+You can use this action in conjunction with `brandonc/terraform-cloud-outputs-action` to create infrastructure and fetch new outputs to help utilize it:
 
-# Template Typescript Action
+```yaml
+name: Nightly Test
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: 0 0 * * *
 
-This action logs a phrase given as input
+jobs:
+  infra:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create infra
+        id: fetch
+        uses: brandonc/terraform-cloud-run-action@v1
+        with:
+          token: ${{ secrets.TFC_TOKEN }}
+          organization: example-org
+          workspace: my-tflocal-workspace
+          wait: true
 
-## Inputs
+  tests:
+    runs-on: ubuntu-latest
+    needs: [infra]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-### `motd`
+      - name: Fetch infra secrets
+        id: fetch
+        uses: brandonc/terraform-cloud-outputs-action@v1
+        with:
+          token: ${{ secrets.TFC_TOKEN }}
+          organization: example-org
+          workspace: my-tflocal-workspace
 
-**Optional** The phrase to log
+      - name: Tests
+        run: go test ./...
+        env:
+          SOME_FOO: ${{ fromJSON(steps.fetch.outputs.workspace-outputs-json).foo }}
+          SOME_BAR: ${{ fromJSON(steps.fetch.outputs.workspace-outputs-json).bar }}
+
+  cleanup:
+    runs-on: ubuntu-latest
+    needs: [tests]
+    if: "${{ always() }}"
+    steps:
+      - name: Destroy infra
+        uses: brandonc/terraform-cloud-run-action@v1
+        with:
+          token: ${{ secrets.TFC_TOKEN }}
+          organization: example-org
+          workspace: my-tflocal-workspace
+          is-destroy: true
+          wait: true
+```

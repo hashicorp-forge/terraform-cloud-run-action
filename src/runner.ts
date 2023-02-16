@@ -20,29 +20,22 @@ async function sleep(interval: number): Promise<void> {
 
 export class Runner {
   private client: TFEClient;
-  private wait: boolean;
   private workspace: WorkspaceShowResponse;
 
-  constructor(
-    client: TFEClient,
-    wait: boolean,
-    workspace: WorkspaceShowResponse
-  ) {
+  constructor(client: TFEClient, workspace: WorkspaceShowResponse) {
     this.client = client;
-    this.wait = wait;
     this.workspace = workspace;
+  }
+
+  public async waitFor(run: RunResponse): Promise<RunResponse> {
+    run = await this.pollWaitForRun(run);
+    await this.pollWaitForResources(this.workspace);
+    return run;
   }
 
   public async createRun(opts: RunCreateOptions): Promise<RunResponse> {
     opts.workspaceID = this.workspace.data.id;
-    let run = await this.client.createRun(opts);
-
-    if (this.wait) {
-      run = await this.pollWaitForRun(run);
-      await this.pollWaitForResources(this.workspace);
-    }
-
-    return run;
+    return await this.client.createRun(opts);
   }
 
   private async pollWaitForResources(ws: WorkspaceShowResponse): Promise<void> {
@@ -66,10 +59,10 @@ export class Runner {
           );
         case "planned_and_finished":
         case "applied":
-          break poll; // Otherwise break
+          break poll; // Without label, only breaks the switch statement
       }
       log.info(
-        `Waiting for run ${run.data.id} to complete, status is ${run.data.attributes.status}...`
+        `Waiting for run ${run.data.id} to complete, status was '${run.data.attributes.status}'...`
       );
       await sleep(pollIntervalRunMs);
       run = await this.client.readRun(run.data.id);
