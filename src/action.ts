@@ -24,20 +24,28 @@ function configureRunCreateOptions(wsID: string): RunCreateOptions {
   };
 }
 
+const REQUIRED_VARIABLES = ["organization", "workspace", "token"];
+
 (async () => {
   try {
     const client = configureClient();
-    log.debug(
-      `fetching workspace ${core.getInput("organization")}/${core.getInput(
-        "workspace"
-      )}`
-    );
+
+    REQUIRED_VARIABLES.forEach(i => {
+      if (core.getInput(i) === "") {
+        throw new Error(`Input parameter ${i} is required but not provided.`);
+      }
+    });
+
     const ws = await client.readWorkspace(
       core.getInput("organization"),
       core.getInput("workspace")
     );
-    const runner = new Runner(client, core.getBooleanInput("wait"), ws);
-    const run = await runner.createRun(configureRunCreateOptions(ws.data.id));
+    const runner = new Runner(client, ws);
+    let run = await runner.createRun(configureRunCreateOptions(ws.data.id));
+
+    if (core.getBooleanInput("wait")) {
+      run = await runner.waitFor(run);
+    }
 
     log.debug(`Created run ${run.data.id}`);
 
