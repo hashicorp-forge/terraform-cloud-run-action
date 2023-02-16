@@ -2,7 +2,7 @@
 
 ## Overview
 
-A GitHub Action step that fetches outputs from a Terraform Cloud workspace.
+A GitHub Action that creates an apply or destroy run in a Terraform Cloud workspace. Use this in conjunction with [brandonc/terraform-cloud-outputs-action](https://github.com/brandonc/terraform-cloud-outputs-action) to assemble GitHub Action pipelines using infrastructure managed by Terraform Cloud.
 
 ### Inputs
 
