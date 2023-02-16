@@ -2,7 +2,7 @@
 
 ## Overview
 
-A GitHub Action step that fetches outputs from a terraform cloud workspace.
+A GitHub Action step that fetches outputs from a Terraform Cloud workspace.
 
 ### Inputs
 
@@ -23,9 +23,9 @@ A GitHub Action step that fetches outputs from a terraform cloud workspace.
 
 - `run-id`: The run ID for the created run.
 
-You can use this action in conjunction with `brandonc/terraform-cloud-run-action` to create infrastructure and fetch new outputs to help utilize it:
+## Example Usage
 
-## Example
+You can use this action in conjunction with `brandonc/terraform-cloud-outputs-action` to create infrastructure and fetch new outputs to help utilize it:
 
 ```yaml
 name: Nightly Test
