@@ -6,10 +6,10 @@ A GitHub Action that creates an apply or destroy run in a Terraform Cloud worksp
 
 ### Inputs
 
-- `token` (**Required**): The token of the TFC/E instance which holds the workspace that manages your tflocal instance.
-- `organization` (**Required**): The TFC/E organization that manages the specified workspace.
-- `workspace` (**Required**): The name of the TFC/E workspace that manages the tflocal configuration.
-- `hostname` (**Optional**): The hostname of the TFC/E instance which holds the workspace that manages your tflocal instance. Defaults to `app.terraform.io`.
+- `token` (**Required**): The token of the TFC/E instance
+- `organization` (**Required**): The TFC/E organization
+- `workspace` (**Required**): The name of the TFC/E workspace
+- `hostname` (**Optional**): The hostname of the TFC/E instance. Defaults to `app.terraform.io`.
 - `wait` (**Optional**): If set, waits for the run to terminate and resources to be processed before the action finishes. Defaults to true.
 - `auto-apply` (**Optional**): If set, applies changes when a Terraform plan is successful. Defaults to true.
 - `is-destroy` (**Optional**): If set, a destroy plan will be run. Defaults to false.
@@ -44,7 +44,7 @@ jobs:
         with:
           token: ${{ secrets.TFC_TOKEN }}
           organization: example-org
-          workspace: my-tflocal-workspace
+          workspace: my-workspace
           wait: true
 
   tests:
@@ -60,7 +60,7 @@ jobs:
         with:
           token: ${{ secrets.TFC_TOKEN }}
           organization: example-org
-          workspace: my-tflocal-workspace
+          workspace: my-workspace
 
       - name: Tests
         run: go test ./...
@@ -78,7 +78,7 @@ jobs:
         with:
           token: ${{ secrets.TFC_TOKEN }}
           organization: example-org
-          workspace: my-tflocal-workspace
+          workspace: my-workspace
           is-destroy: true
           wait: true
 ```
