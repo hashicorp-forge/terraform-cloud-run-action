@@ -2,7 +2,7 @@
 
 ## Overview
 
-A GitHub Action that creates an apply or destroy run in a Terraform Cloud workspace. Use this in conjunction with [brandonc/terraform-cloud-outputs-action](https://github.com/brandonc/terraform-cloud-outputs-action) to assemble GitHub Action pipelines using infrastructure managed by Terraform Cloud.
+A GitHub Action that creates an apply or destroy run in a Terraform Cloud workspace. Use this in conjunction with [hashicorp-forge/terraform-cloud-outputs-action](https://github.com/hashicorp-forge/terraform-cloud-outputs-action) to assemble GitHub Action pipelines using infrastructure managed by Terraform Cloud.
 
 ### Inputs
 
@@ -25,7 +25,7 @@ A GitHub Action that creates an apply or destroy run in a Terraform Cloud worksp
 
 ## Example Usage
 
-You can use this action in conjunction with `brandonc/terraform-cloud-outputs-action` to create infrastructure and fetch new outputs to help utilize it:
+You can use this action in conjunction with `hashicorp-forge/terraform-cloud-outputs-action` to create infrastructure and fetch new outputs to help utilize it:
 
 ```yaml
 name: Nightly Test
@@ -40,7 +40,7 @@ jobs:
     steps:
       - name: Create infra
         id: fetch
-        uses: brandonc/terraform-cloud-run-action@v1
+        uses: hashicorp-forge/terraform-cloud-run-action@v1
         with:
           token: ${{ secrets.TFC_TOKEN }}
           organization: example-org
@@ -56,7 +56,7 @@ jobs:
 
       - name: Fetch infra secrets
         id: fetch
-        uses: brandonc/terraform-cloud-outputs-action@v1
+        uses: hashicorp-forge/terraform-cloud-outputs-action@v1
         with:
           token: ${{ secrets.TFC_TOKEN }}
           organization: example-org
@@ -74,7 +74,7 @@ jobs:
     if: "${{ always() }}"
     steps:
       - name: Destroy infra
-        uses: brandonc/terraform-cloud-run-action@v1
+        uses: hashicorp-forge/terraform-cloud-run-action@v1
         with:
           token: ${{ secrets.TFC_TOKEN }}
           organization: example-org
