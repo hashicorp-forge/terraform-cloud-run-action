@@ -1,5 +1,9 @@
 # terraform-cloud-run-action
 
+# ⚠️ IMPORTANT
+
+This repo has been archived. New features and bug fixes will be added to [hashicorp-forge/terraform-cloud-action](https://github.com/hashicorp-forge/terraform-cloud-action), which contains several Terraform Cloud actions that are better organized and easier to maintain.
+
 ## Overview
 
 A GitHub Action that creates an apply or destroy run in a Terraform Cloud workspace. Use this in conjunction with [hashicorp-forge/terraform-cloud-outputs-action](https://github.com/hashicorp-forge/terraform-cloud-outputs-action) to assemble GitHub Action pipelines using infrastructure managed by Terraform Cloud.
